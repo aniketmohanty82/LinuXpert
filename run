@@ -4,25 +4,33 @@
 file="$1"
 extension="${file##*.}"
 
+# Check if the second argument (output filename) is provided
+if [ $# -gt 1 ]; then
+    output_file="$2"
+fi
+
 case "$extension" in
     c)
         # Compile and run C files
-        gcc -o "${file%.*}" "$file" && "./${file%.*}"
+        gcc -o "${file%.*}" "$file" && "./${file%.*}" ${output_file:+> "$output_file"}
         ;;
     java)
         # Compile and run Java files
-        javac "$file" && java "${file%.*}"
+        javac "$file" && java "${file%.*}" ${output_file:+> "$output_file"}
         ;;
     py)
         # Run Python files
-	python3 "$file"
+        if [ -n "$output_file" ]; then
+            python3 "$file" > "$output_file"
+        else
+            python3 "$file"
+        fi
         ;;
     cpp)
         # Compile and run C++ files
-        g++ -o "${file%.*}" "$file" && "./${file%.*}"
+        g++ -o "${file%.*}" "$file" && "./${file%.*}" ${output_file:+> "$output_file"}
         ;;
     *)
         echo "Unsupported file type"
         ;;
 esac
-
