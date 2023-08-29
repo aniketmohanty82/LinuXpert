@@ -1,4 +1,6 @@
 # system-applications
+## Goal
+I wnat to make the terminal a much-friendlier place for new coders!
 ## Run
 Created a bash script that allows users to compile and run any file they want by just mentioning the filename.
 ```
