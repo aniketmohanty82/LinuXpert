@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Get the file extension from the provided filename
+file="$1"
+extension="${file##*.}"
+
+case "$extension" in
+    c)
+        # Compile and run C files
+        gcc -o "${file%.*}" "$file" && "./${file%.*}"
+        ;;
+    java)
+        # Compile and run Java files
+        javac "$file" && java "${file%.*}"
+        ;;
+    py)
+        # Run Python files
+	python3 "$file"
+        ;;
+    cpp)
+        # Compile and run C++ files
+        g++ -o "${file%.*}" "$file" && "./${file%.*}"
+        ;;
+    *)
+        echo "Unsupported file type"
+        ;;
+esac
+
