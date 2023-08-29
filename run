@@ -12,23 +12,43 @@ fi
 case "$extension" in
     c)
         # Compile and run C files
-        gcc -o "${file%.*}" "$file" && "./${file%.*}" ${output_file:+> "$output_file"}
+        if gcc -o "${file%.*}" "$file"; then
+            "./${file%.*}" ${output_file:+> "$output_file"}
+        else
+            echo "Compilation failed for $file"
+        fi
         ;;
     java)
         # Compile and run Java files
-        javac "$file" && java "${file%.*}" ${output_file:+> "$output_file"}
+        if javac "$file"; then
+            java "${file%.*}" ${output_file:+> "$output_file"}
+        else
+            echo "Compilation failed for $file"
+        fi
         ;;
     py)
         # Run Python files
         if [ -n "$output_file" ]; then
-            python3 "$file" > "$output_file"
+            if python3 "$file" > "$output_file"; then
+                echo "Output saved to $output_file"
+            else
+                echo "Execution failed for $file"
+            fi
         else
-            python3 "$file"
+            if python3 "$file"; then
+                echo "Python script executed successfully"
+            else
+                echo "Execution failed for $file"
+            fi
         fi
         ;;
     cpp)
         # Compile and run C++ files
-        g++ -o "${file%.*}" "$file" && "./${file%.*}" ${output_file:+> "$output_file"}
+        if g++ -o "${file%.*}" "$file"; then
+            "./${file%.*}" ${output_file:+> "$output_file"}
+        else
+            echo "Compilation failed for $file"
+        fi
         ;;
     *)
         echo "Unsupported file type"
