@@ -12,8 +12,6 @@ def divide(x, y):
 
 def main():
   # Get two numbers from the user
-  import pdb
-  pdb.set_trace()
   num1 = int(input("Enter the first number: "))
   num2 = int(input("Enter the second number: "))
 

@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Check if a filename was provided as an argument
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 <filename>"
+  exit 1
+fi
+
+filename="$1"
+extension="${filename##*.}"
+
+# Check if the file exists
+if [ ! -f "$filename" ]; then
+  echo "File not found: $filename"
+  exit 1
+fi
+
+# Check the file extension and run the appropriate code checker
+case "$extension" in
+  py)
+    echo "Running pylint for Python code..."
+    pylint "$filename"
+    ;;
+    
+  c | cpp)
+    echo "Running cppcheck for C/C++ code..."
+    cppcheck --enable=all "$filename"
+    ;;
+    
+  java)
+    echo "Running Checkstyle for Java code..."
+    checkstyle -c your_checkstyle_configuration.xml "$filename"
+    ;;
+    
+  *)
+    echo "Unsupported file extension: .$extension"
+    exit 1
+    ;;
+esac

@@ -10,7 +10,7 @@ fi
 argument="$1"
 
 # Check if the argument is valid
-if [ "$argument" != "run" ] && [ "$argument" != "update" ]; then
+if [ "$argument" != "run" ] && [ "$argument" != "debug" ]; then
     echo "Invalid argument. Valid arguments are 'run' and 'update'."
     exit 1
 fi
