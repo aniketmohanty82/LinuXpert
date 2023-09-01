@@ -1,0 +1,106 @@
+#!/bin/bash
+
+# Check if a filename argument is provided
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <filename>"
+    exit 1
+fi
+
+# Extract the file extension
+file_extension="${1##*.}"
+
+# Extract the project name (filename without extension)
+project_name="${1%.*}"
+
+# Check the file extension and create a project structure accordingly
+case "$file_extension" in
+    py)
+        # Python project structure
+        mkdir -p $project_name
+        echo "def main():"
+        echo '    print("Hello, world!")' > $project_name/$1
+        echo '' >> $project_name/$1
+        echo 'if __name__ == "__main__":'
+        echo '    main()' >> $project_name/$1
+
+        # Create a test folder with a sample test file
+        mkdir -p $project_name/test
+        echo 'import unittest' > $project_name/test/test_$project_name.py
+        echo '' >> $project_name/test/test_$project_name.py
+        echo "class Test$project_name(unittest.TestCase):" >> $project_name/test/test_$project_name.py
+        echo '' >> $project_name/test/test_$project_name.py
+        echo '    def test_hello_world(self):' >> $project_name/test/test_$project_name.py
+        echo '        self.assertEqual(main(), "Hello, world!")' >> $project_name/test/test_$project_name.py
+        ;;
+    c)
+        # C project structure
+        mkdir -p $project_name
+        touch $project_name/$1
+        echo '#include <stdio.h>' > $project_name/$1
+        echo '' >> $project_name/$1
+        echo 'int main() {' >> $project_name/$1
+        echo '    printf("Hello, world!\\n");' >> $project_name/$1
+        echo '    return 0;' >> $project_name/$1
+        echo '}' >> $project_name/$1
+
+        # Create a test folder with a sample test file
+        mkdir -p $project_name/test
+        echo '#include <stdio.h>' > $project_name/test/test_$project_name.c
+        echo '' >> $project_name/test/test_$project_name.c
+        echo 'int main() {' >> $project_name/test/test_$project_name.c
+        echo '    // TODO: Add test cases here' >> $project_name/test/test_$project_name.c
+        echo '    printf("Tests run successfully!\\n");' >> $project_name/test/test_$project_name.c
+        echo '    return 0;' >> $project_name/test/test_$project_name.c
+        echo '}' >> $project_name/test/test_$project_name.c
+        ;;
+    cpp)
+        # C++ project structure
+        mkdir -p $project_name
+        touch $project_name/$1
+        echo '#include <iostream>' > $project_name/$1
+        echo '' >> $project_name/$1
+        echo 'int main() {' >> $project_name/$1
+        echo '    std::cout << "Hello, world!" << std::endl;' >> $project_name/$1
+        echo '    return 0;' >> $project_name/$1
+        echo '}' >> $project_name/$1
+
+        # Create a test folder with a sample test file
+        mkdir -p $project_name/test
+        echo '#include <iostream>' > $project_name/test/test_$project_name.cpp
+        echo '' >> $project_name/test/test_$project_name.cpp
+        echo 'int main() {' >> $project_name/test/test_$project_name.cpp
+        echo '    // TODO: Add test cases here' >> $project_name/test/test_$project_name.cpp
+        echo '    std::cout << "Tests run successfully!" << std::endl;' >> $project_name/test/test_$project_name.cpp
+        echo '    return 0;' >> $project_name/test/test_$project_name.cpp
+        echo '}' >> $project_name/test/test_$project_name.cpp
+        ;;
+    java)
+        # Java project structure
+        mkdir -p $project_name/src
+        touch $project_name/src/$1
+        echo "public class $project_name {" > $project_name/src/$1
+        echo '    public static void main(String[] args) {' >> $project_name/src/$1
+        echo '        System.out.println("Hello, world!");' >> $project_name/src/$1
+        echo '    }' >> $project_name/src/$1
+        echo '}' >> $project_name/src/$1
+
+        # Create a test folder with a sample test file
+        mkdir -p $project_name/test
+        echo 'import org.junit.Test;' > $project_name/test/Test$project_name.java
+        echo 'import static org.junit.Assert.*;' >> $project_name/test/Test$project_name.java
+        echo '' >> $project_name/test/Test$project_name.java
+        echo "public class Test$project_name {" >> $project_name/test/Test$project_name.java
+        echo '    @Test' >> $project_name/test/Test$project_name.java
+        echo '    public void testHelloWorld() {' >> $project_name/test/Test$project_name.java
+        echo '        // TODO: Add test cases here' >> $project_name/test/Test$project_name.java
+        echo '        assertEquals("Hello, world!", new ' "$project_name" '().getMessage());' >> $project_name/test/Test$project_name.java
+        echo '    }' >> $project_name/test/Test$project_name.java
+        echo '}' >> $project_name/test/Test$project_name.java
+        ;;
+    *)
+        echo "Unsupported file type: $file_extension"
+        exit 1
+        ;;
+esac
+
+echo "Created project structure for $file_extension file."
