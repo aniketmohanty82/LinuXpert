@@ -27,7 +27,7 @@ When run, the command will give you a report on the health of your code and what
 #### NOTE: Checkstyle has its own XML file where you can specify the conditions you want. I have created a sample XML file for now but I would advise you to expand it
 
 ### List
-A bash script that lists all items in teh current directory with much more ease and simplicity than *ls*. Also provides key details on how to use *ls* to help users
+A bash script that lists all items in the current directory with much more ease and simplicity than *ls*. Also provides key details on how to use *ls* to help users
 ```
 list
 ```
