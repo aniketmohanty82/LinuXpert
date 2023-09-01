@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# Check if the user provides an argument
+if [ $# -eq 0 ]; then
+    echo "Please provide an argument. Valid arguments are 'run' and 'update'."
+    exit 1
+fi
+
+# Get the argument
+argument="$1"
+
+# Check if the argument is valid
+if [ "$argument" != "run" ] && [ "$argument" != "update" ]; then
+    echo "Invalid argument. Valid arguments are 'run' and 'update'."
+    exit 1
+fi
+
+# Run the appropriate script
+if [ "$argument" == "run" ]; then
+    ./run "$2"
+elif [ "$argument" == "update" ]; then
+    ./update
+fi

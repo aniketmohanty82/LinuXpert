@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# This script is a debugger for C, C++, Java, and Python programs.
+
+set -e
+
+# Get the filename from the command line argument.
+file="$1"
+
+# Check the file extension to determine the language.
+extension=${file##*.}
+
+if [ "$extension" == "c" ]; then
+  # The file is a C program.
+  debugger="gdb"
+elif [ "$extension" == "cpp" ]; then
+  # The file is a C++ program.
+  debugger="g++"
+elif [ "$extension" == "java" ]; then
+  # The file is a Java program.
+  debugger="jdb"
+elif [ "$extension" == "py" ]; then
+  # The file is a Python program.
+  debugger="pdb"
+else
+  # The file is not a supported language.
+  echo "The file '$file' is not a supported language."
+  exit 1
+fi
+
+# Open the debugger for the file.
+$debugger $file
