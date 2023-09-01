@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Check if there are any arguments provided
+if [ $# -gt 0 ]; then
+  echo "Usage: $0"
+  exit 1
+fi
+
+# Define colors using tput
+reset=$(tput sgr0)
+green=$(tput setaf 2)
+blue=$(tput setaf 4)
+red=$(tput setaf 1)
+orange=$(tput setaf 3)
+
+# Run ls long version and format the output
+ls -l --color=always | awk -v reset="$reset" -v green="$green" -v blue="$blue" -v red="$red" -v orange="$orange" '{
+    # Capture the filename (last column) and format the output
+    filename = $NF
+    $NF = ""
+    for (i=1; i<=NF; i++) {
+        printf("%s%s%s|", orange, $i, reset)
+    }
+    printf("%s%s%s\n", orange, filename, reset)
+    print "---------------------------------------------------------------------------------------------------------------------------------------------";
+}'
+
+echo "Usage:"
+echo "  list - Display the formatted output of 'ls' for the current directory."
+echo "  ls - List files and directories in the current directory."
+echo "  ls -l - List files and directories in long format."
+echo "  ls -al - List all files and directories in long format, including hidden ones."
