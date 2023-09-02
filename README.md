@@ -1,6 +1,6 @@
 # LinuXpert
 ## Goal
-The goal of LinuXpert is to create a CLI of easy-to-learn commands that help new coders adjust to the UNIX environments
+The goal of LinuXpert is to create a CLI of easy-to-learn commands that help new coders adjust to the UNIX environments. I want to make the CLI a comfortable place for everyone. 
 ## Commands
 ### Run
 A bash script that allows users to compile and run any file they want by just mentioning the filename.
