@@ -1,32 +1,175 @@
 #!/bin/bash
 
-# Check if there are any arguments provided
+# Define some color variables with tput.
+reset=$(tput sgr0)
+
+# Header color and default text color
+headerColor=$(tput setaf 6)    # Cyan for headers
+normalColor=$(tput setaf 7)    # White for general text
+
+# Special highlight colors
+dirColor=$(tput setaf 4)       # Blue for directories
+execColor=$(tput setaf 2)      # Green for executables
+linkColor=$(tput setaf 5)      # Magenta for symlinks
+notOwnedColor=$(tput setaf 1)  # Red if file is not owned by the current user
+multiLinkColor=$(tput setaf 3) # Yellow/Orange if multiple links
+
+# If there's an argument, check what it is.
 if [ $# -gt 0 ]; then
-  echo "Usage: $0"
-  exit 1
+  if [ "$1" = "explain" ]; then
+    echo -e "${headerColor}Column Explanations:${reset}"
+    echo -e "  ${headerColor}Permissions${reset} : File or directory permissions (r=read, w=write, x=execute)."
+    echo -e "  ${headerColor}Links${reset}       : Number of hard links to the file."
+    echo -e "  ${headerColor}Owner${reset}       : The username of the file owner."
+    echo -e "  ${headerColor}Group${reset}       : The group name of the file owner."
+    echo -e "  ${headerColor}Size${reset}        : The file size in bytes (by default)."
+    echo -e "  ${headerColor}Month${reset}       : Month of the last modification."
+    echo -e "  ${headerColor}Day${reset}         : Day of the last modification."
+    echo -e "  ${headerColor}Time${reset}        : Time (or year if not current year) of the last modification."
+    echo -e "  ${headerColor}Name${reset}        : The name of the file or directory."
+    exit 0
+  else
+    echo "Usage: $0 [explain]"
+    echo "  No arguments: Displays the formatted 'ls -l' output for the current directory."
+    echo "  explain     : Explains each column displayed by 'list'."
+    exit 1
+  fi
 fi
 
-# Define colors using tput
-reset=$(tput sgr0)
-green=$(tput setaf 2)
-blue=$(tput setaf 4)
-red=$(tput setaf 1)
-orange=$(tput setaf 3)
+# We run ls -l without color so we can parse columns accurately.
+ls -l | awk -v reset="$reset" \
+           -v headerColor="$headerColor" \
+           -v normalColor="$normalColor" \
+           -v dirColor="$dirColor" \
+           -v execColor="$execColor" \
+           -v linkColor="$linkColor" \
+           -v notOwnedColor="$notOwnedColor" \
+           -v multiLinkColor="$multiLinkColor" '
+BEGIN {
+  # We can detect the current user from the environment
+  myUser = ENVIRON["USER"]
 
-# Run ls long version and format the output
-ls -l --color=always | awk -v reset="$reset" -v green="$green" -v blue="$blue" -v red="$red" -v orange="$orange" '{
-    # Capture the filename (last column) and format the output
-    filename = $NF
-    $NF = ""
-    for (i=1; i<=NF; i++) {
-        printf("%s%s%s|", orange, $i, reset)
+  # Define the headers
+  header[1] = "Permissions"
+  header[2] = "Links"
+  header[3] = "Owner"
+  header[4] = "Group"
+  header[5] = "Size"
+  header[6] = "Month"
+  header[7] = "Day"
+  header[8] = "Time"
+  header[9] = "Name"
+
+  # Initialize column widths to header lengths
+  for (i=1; i<=9; i++) {
+    col_width[i] = length(header[i])
+  }
+  row_count = 0
+}
+
+# Skip the "total" line
+$1 == "total" { next }
+
+{
+  row_count++
+
+  # Extract the first 8 fields
+  for (i=1; i<=8; i++) {
+    data[row_count, i] = $i
+    # Track max width
+    if (length($i) > col_width[i]) {
+      col_width[i] = length($i)
     }
-    printf("%s%s%s\n", orange, filename, reset)
-    print "---------------------------------------------------------------------------------------------------------------------------------------------";
-}'
+  }
+
+  # The rest of the line is the file name (could contain spaces)
+  name_col = ""
+  for (i=9; i<=NF; i++) {
+    if (name_col == "") {
+      name_col = $i
+    } else {
+      name_col = name_col " " $i
+    }
+  }
+  data[row_count, 9] = name_col
+
+  # Update max width for the name column
+  if (length(name_col) > col_width[9]) {
+    col_width[9] = length(name_col)
+  }
+
+  # --------------------
+  # Decide color logic now for each column
+  # Initialize all columns to normalColor
+  for (i=1; i<=9; i++) {
+    colColor[row_count, i] = normalColor
+  }
+
+  # 1) Check if file is a directory, symlink, or executable for the Name column
+  permissions = data[row_count, 1]
+  firstChar = substr(permissions, 1, 1)
+
+  if (firstChar == "d") {
+    # directory
+    colColor[row_count, 9] = dirColor
+  } else if (firstChar == "l") {
+    # symlink
+    colColor[row_count, 9] = linkColor
+  } else {
+    # regular file?
+    # if any 'x' in permissions => executable
+    if (permissions ~ /x/) {
+      colColor[row_count, 9] = execColor
+    }
+  }
+
+  # 2) Highlight if # of links > 1
+  linkCount = data[row_count, 2] + 0  # numeric
+  if (linkCount > 1) {
+    colColor[row_count, 2] = multiLinkColor
+  }
+
+  # 3) Highlight if owner != current user
+  owner = data[row_count, 3]
+  if (owner != myUser) {
+    colColor[row_count, 3] = notOwnedColor
+  }
+}
+
+END {
+  #################################################################
+  # Print the header row
+  #################################################################
+  for (i = 1; i <= 9; i++) {
+    # Use headerColor for the headers
+    printf("%s%-*s%s ", headerColor, col_width[i], header[i], reset)
+  }
+  printf("\n")
+
+  # Print a separator line
+  for (i = 1; i <= 9; i++) {
+    for (j = 1; j <= col_width[i]; j++) {
+      printf("-")
+    }
+    printf(" ")
+  }
+  printf("\n")
+
+  #################################################################
+  # Print each data row, with per-column coloring
+  #################################################################
+  for (r = 1; r <= row_count; r++) {
+    for (i = 1; i <= 9; i++) {
+      printf("%s%-*s%s ", colColor[r, i], col_width[i], data[r, i], reset)
+    }
+    printf("\n")
+  }
+}
+'
 
 echo "Usage:"
-echo "  list - Display the formatted output of 'ls' for the current directory."
-echo "  ls - List files and directories in the current directory."
-echo "  ls -l - List files and directories in long format."
-echo "  ls -al - List all files and directories in long format, including hidden ones."
+echo "  list                - Display the formatted output of 'ls -l' for the current directory."
+echo "  list explain        - Show an explanation of each column in the 'list' output."
+echo "  ls                  - List files and directories in the current directory."
+echo "  ls -l               - List files and directories in long format."
+echo "  ls -al              - List all files and directories in long format, including hidden ones."
