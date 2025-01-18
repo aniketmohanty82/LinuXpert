@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+#
+# jump: Find a file by exact name within 2 subdirectory levels of the current dir
+# and print how to 'cd' to the containing directory.
+#
+# Usage:
+#   ./jump <filename>
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 <filename>"
+  exit 1
+fi
+
+filename="$1"
+
+# Search up to 2 levels below the current directory (total: current dir + 2 subdir levels).
+# -maxdepth 1 means current dir only
+# -maxdepth 2 means current + direct subdirs
+# -maxdepth 3 means current + direct subdirs + sub-subdirs
+# So we use 3 to allow 2 levels deeper than the current.
+results=$(find /Users -name "$filename" 2>/dev/null)
+
+# If no matches, exit with a message
+if [ -z "$results" ]; then
+  echo "No file named '$filename' found within 2 directory levels of $(pwd)."
+  exit 1
+fi
+
+# Count how many matches
+count=$(echo "$results" | wc -l)
+
+# If multiple, list them all and provide instructions
+if [ "$count" -gt 1 ]; then
+  echo "Multiple files named '$filename' found:"
+  echo "$results"
+  echo
+  echo "Pick the path you want, then manually run something like:"
+  echo '  cd "$(dirname ./path/to/chosen_match)"'
+  exit 0
+fi
+
+# Exactly one match
+first_match=$(echo "$results" | head -n 1)
+dir=$(dirname "$first_match")
+
+echo "Found exactly one match:"
+echo "$first_match"
+echo
+echo "To go there, run:"
+echo "  cd \"$dir\""
